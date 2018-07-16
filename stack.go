@@ -1,17 +1,18 @@
 /*
-    a stack implementation for integers in golang
+    a stack implementation for stuff (using interface{}) in golang
 */
 
 package stack
 
 import "errors"
+import "reflect"
 
 type Stack struct {
     top *element
 }
 
 type element struct {
-    value int
+    value interface{}
     under *element
 }
 
@@ -33,7 +34,7 @@ func (s *Stack) Count() (c uint) {
 }
 
 // peek at the element on the top of the stack
-func (s *Stack) Peek() (int, error) {
+func (s *Stack) Peek() (interface{}, error) {
     var e *element = s.top
     if e == nil {
         return 0, errors.New("empty stack")
@@ -42,7 +43,7 @@ func (s *Stack) Peek() (int, error) {
 }
 
 // pop an element from the top of the stack
-func (s *Stack) Pop() (int, error) {
+func (s *Stack) Pop() (interface{}, error) {
     var e *element = s.top
     if e == nil {
         return 0, errors.New("empty stack")
@@ -52,9 +53,13 @@ func (s *Stack) Pop() (int, error) {
 }
 
 // push an element on the top of the stack
-func (s *Stack) Push(v int) {
+// enforces that the types match as elements are pushed
+func (s *Stack) Push(i interface{}) {
     var e *element = new(element)
-    e.value = v
+    if s.top != nil && reflect.TypeOf(s.top.value) != reflect.TypeOf(i) {
+        panic("type mismatch")
+    }
+    e.value = i
     e.under = s.top
     s.top = e
 }
