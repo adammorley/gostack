@@ -4,11 +4,21 @@
 
 package stack
 
-import "errors"
+import "fmt"
 import "reflect"
 
+// a stack is an in-order pile of things; in this particular case, whatever was last added is on the top.
 type Stack struct {
     top *element
+    count uint
+}
+
+// an error can be returned
+type StackError struct {
+    msg string
+}
+func (e *StackError) Error() string {
+    return fmt.Sprintf("stack %v", e.msg)
 }
 
 type element struct {
@@ -24,20 +34,15 @@ func New() *Stack {
 }
 
 // return the number of elements on the stack
-func (s *Stack) Count() (c uint) {
-    var e *element = s.top
-    for e != nil {
-        c++
-        e = e.under
-    }
-    return
+func (s *Stack) Count() uint {
+    return s.count
 }
 
 // peek at the element on the top of the stack
 func (s *Stack) Peek() (interface{}, error) {
     var e *element = s.top
     if e == nil {
-        return 0, errors.New("empty stack")
+        return 0, &StackError{msg: "empty"}
     }
     return e.value, nil
 }
@@ -46,20 +51,23 @@ func (s *Stack) Peek() (interface{}, error) {
 func (s *Stack) Pop() (interface{}, error) {
     var e *element = s.top
     if e == nil {
-        return 0, errors.New("empty stack")
+        return 0, &StackError{msg: "empty"}
     }
     s.top = e.under
+    s.count -= 1
     return e.value, nil
 }
 
 // push an element on the top of the stack
 // enforces that the types match as elements are pushed
-func (s *Stack) Push(i interface{}) {
-    var e *element = new(element)
+func (s *Stack) Push(i interface{}) error {
     if s.top != nil && reflect.TypeOf(s.top.value) != reflect.TypeOf(i) {
-        panic("type mismatch")
+        return &StackError{msg: "type mismatch"}
     }
+    var e *element = new(element)
     e.value = i
     e.under = s.top
     s.top = e
+    s.count += 1
+    return nil
 }

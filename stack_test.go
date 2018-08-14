@@ -7,6 +7,10 @@ func TestStack(t *testing.T) {
     s.Push(1)
     s.Push(2)
     s.Push(3)
+    e := s.Push("foo")
+    if _, ok := e.(*StackError); !ok {
+        t.Error("did not get back an error when pushing incompatible type", e)
+    }
     if s.Count() != 3 {
         t.Error("pushed three, didn't find them")
     } else if v, e := s.Pop(); e != nil || v != 3 {
